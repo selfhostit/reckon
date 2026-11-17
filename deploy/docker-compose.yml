@@ -1,11 +1,11 @@
 # Runs the app, and optionally a worker, from the published images. They follow the
-# 1.x releases (`:1`); see docs/deploy.md to pin one release.
+# 0.x releases (`:0`); see docs/deploy.md to pin one release.
 # Settings come from .env next to this file (see .env.example); deploy/install.sh
 # sets everything up. Update with: docker compose pull && docker compose up -d
 
 services:
   app:
-    image: ${RECKON_IMAGE:-ghcr.io/selfhostit/reckon:1}
+    image: ${RECKON_IMAGE:-ghcr.io/selfhostit/reckon:0}
     restart: unless-stopped
     # Run as the owner of ./pb_data, so the data folder stays yours (and a NAS user's).
     user: ${PUID:-1000}:${PGID:-1000}
@@ -28,7 +28,7 @@ services:
   # Runs one of the workers in workers/, RECKON_WORKER_SCRIPT (worker.py by default).
   # Enabled with COMPOSE_PROFILES=worker in .env.
   worker:
-    image: ${RECKON_WORKER_IMAGE:-ghcr.io/selfhostit/reckon-worker:1}
+    image: ${RECKON_WORKER_IMAGE:-ghcr.io/selfhostit/reckon-worker:0}
     command: [python, "${RECKON_WORKER_SCRIPT:-worker.py}"]
     profiles: [worker]
     restart: unless-stopped

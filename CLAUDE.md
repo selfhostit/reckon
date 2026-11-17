@@ -1,7 +1,8 @@
 # CLAUDE.md
 
-reckon is a self-hosted app built on the plasto template: a Go backend on PocketBase (`backend/`)
-serving a Svelte 5 + Tailwind web app (`web/`).
+Reckon is a self-hosted trainer for the numerical reasoning tests used in job applications,
+built on the plasto template: a Go backend on PocketBase (`backend/`) serving a Svelte 5 +
+Tailwind web app (`web/`). How questions and scores are made is in `docs/plan.md`.
 
 ## Commands
 
@@ -22,6 +23,10 @@ serving a Svelte 5 + Tailwind web app (`web/`).
 - Heavy work (ML, scraping, LLM calls) goes in a Python worker under `workers/` that uses
   `plasto_worker.Client`; workers write records, Go hooks react. Allow workers in API rules
   with `@request.auth.collectionName = "workers"`.
+- Questions, hints, solutions and adaptive scoring live in `web/src/lib/engine.ts`; its tests
+  check every worked sum. Keep hint and solution text plain: everyday words, no jargon.
+- Each person's practice is private: API rules on `progress` and `practice_sessions` allow
+  only `user = @request.auth.id`, the owner included. Keep it that way.
 - `docs/first-feature.md` walks through adding a feature across every layer.
 - Deploy files are in `deploy/` (see `docs/deploy.md`); `make smoke` runs the images with
   `deploy/docker-compose.yml` end to end, and CI runs it on every PR.

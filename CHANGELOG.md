@@ -1,23 +1,29 @@
 # Changelog
 
-What changed in each release of reckon. Installs update to the newest release; see
+What changed in each release of Reckon. Installs update to the newest release; see
 [docs/deploy.md](docs/deploy.md#updates-and-versions).
 
-## Unreleased
+## 0.1.0 (2026-11-17)
 
-- Every published image carries a software bill of materials (SBOM), and an OpenSSF
-  Scorecard run checks the repository's security practices every week.
-- golang.org/x/net 0.62.0, which fixes GO-2026-6860.
-- SECURITY.md: how to report a problem privately, and how quickly fixes ship.
-- Security scans on every pull request and every Monday: CodeQL, govulncheck, Grype
-  (web and worker dependencies, released images), dependency review and gitleaks.
-- The containers' filesystems are read-only apart from `pb_data` and `/tmp`.
-- The compose file follows the major version (`:1`) instead of `:latest`, and the
-  installer fetches the compose files of the newest release instead of `main`.
+The first release: practice for the numerical reasoning tests used in job applications.
 
-## 1.0.0 (2026-11-04)
-
-- Releases: a `vX.Y.Z` tag publishes `:X.Y.Z`, `:X.Y`, `:X` and `:latest`, and installs follow
-  `:latest`, so they only update to a release. `main` publishes `:edge`.
-- Every published image has a signed provenance attestation (`gh attestation verify`).
-- Security and maintenance section in the README.
+- Four kinds of question, each with nine levels: number series, number grids, number
+  figures and function boxes, generated fresh every time.
+- Lessons of eight questions with instant feedback. Six right on your own moves a skill up a
+  level.
+- A **Hint** under every question: how to think about this kind of question, and a pointer
+  for this one that doesn't give the answer away.
+- **Show solution**: a plain-language walkthrough, one step at a time, highlighting the boxes
+  each step is about.
+- Adaptive mock tests, full (15 questions, 30 minutes) or quick (8 questions, 12 minutes),
+  scored as a stanine from 1 to 9 with its margin of error, the score per question type and
+  what to practise next.
+- Progress: test results over time, accuracy and pace per question type, four weeks of
+  activity, and every lesson and test to review with its worked solutions.
+- XP, a daily goal and a streak, with an optional evening reminder when the streak would
+  break.
+- Each person's practice is private to them, the owner included; download it as a file or
+  start again from **Me**.
+- Built on plasto: setup code, accounts for a household, rate-limited sign-in, a locked-down
+  container, nightly backups, signed images and security scans. Includes Shoppa's fix for push
+  notifications on iPhones and Troye's fix for missed-job checks.
