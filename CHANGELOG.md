@@ -3,6 +3,11 @@
 What changed in each release of Reckon. Installs update to the newest release; see
 [docs/deploy.md](docs/deploy.md#updates-and-versions).
 
+## 0.1.1 (2026-11-17)
+
+- The worker image builds for armv7 (32-bit Raspberry Pi) again, so the release publishes
+  every image. 0.1.0's release build stopped there.
+
 ## 0.1.0 (2026-11-17)
 
 The first release: practice for the numerical reasoning tests used in job applications.
