@@ -1,50 +1,84 @@
 <script lang="ts">
-  import { pb } from '../lib/pb';
-  import { install } from '../lib/install.svelte';
-  import { session } from '../lib/session.svelte';
-  import Account from './Account.svelte';
-  import Notifications from './Notifications.svelte';
+  import { onMount } from 'svelte';
+  import { nav } from '../lib/nav.svelte';
+  import Icon, { type IconName } from './Icon.svelte';
+  import Lesson from './Lesson.svelte';
+  import Me from './Me.svelte';
+  import MockTest from './MockTest.svelte';
+  import Progress from './Progress.svelte';
+  import Result from './Result.svelte';
+  import Review from './Review.svelte';
+  import Skills from './Skills.svelte';
+  import TestIntro from './TestIntro.svelte';
+  import Today from './Today.svelte';
 
-  const user = $derived(session.user!);
-  const version = pb
-    .send<{ version: string }>('/api/app/info', {})
-    .then((i) => i.version)
-    .catch(() => '');
+  // The signed-in app: tabs, each with its own #address so Back works, and the
+  // full-screen lesson, test and result on top of them (lib/nav.svelte.ts).
+  const tabs: { id: string; label: string; icon: IconName }[] = [
+    { id: 'today', label: 'Today', icon: 'today' },
+    { id: 'practice', label: 'Practice', icon: 'practice' },
+    { id: 'test', label: 'Mock test', icon: 'test' },
+    { id: 'progress', label: 'Progress', icon: 'progress' },
+    { id: 'me', label: 'Me', icon: 'me' },
+  ];
+
+  const fromHash = () => location.hash.slice(1);
+  let hash = $state(fromHash());
+  const review = $derived(hash.startsWith('review-') ? hash.slice(7) : '');
+  const tab = $derived(review ? 'progress' : (tabs.find((t) => t.id === hash)?.id ?? 'today'));
+
+  onMount(() => {
+    const onHash = () => {
+      hash = fromHash();
+      // Back from a lesson or result returns to the tabs
+      if (nav.screen.name !== 'tabs') nav.screen = { name: 'tabs' };
+    };
+    addEventListener('hashchange', onHash);
+    return () => removeEventListener('hashchange', onHash);
+  });
 </script>
 
-<main
-  class="mx-auto flex min-h-dvh max-w-md flex-col gap-4 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-8"
->
-  <header class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold tracking-tight">Hi {user.name || user.email}</h1>
-    <button class="btn-secondary px-3 py-2 text-sm" onclick={() => session.logout()}
-      >Sign out</button
+{#if nav.screen.name === 'lesson'}
+  {#key nav.screen}<Lesson family={nav.screen.family} />{/key}
+{:else if nav.screen.name === 'test'}
+  <MockTest mode={nav.screen.mode} />
+{:else if nav.screen.name === 'result'}
+  {#key nav.screen.id}<Result id={nav.screen.id} />{/key}
+{:else}
+  <div class="mx-auto min-h-dvh max-w-2xl">
+    <main class="flex flex-col gap-4 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-28">
+      {#if review}
+        {#key review}<Review id={review} />{/key}
+      {:else if tab === 'today'}
+        <Today />
+      {:else if tab === 'practice'}
+        <Skills />
+      {:else if tab === 'test'}
+        <TestIntro />
+      {:else if tab === 'progress'}
+        <Progress />
+      {:else}
+        <Me />
+      {/if}
+    </main>
+
+    <nav
+      class="fixed inset-x-0 bottom-0 z-10 border-t border-zinc-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90"
     >
-  </header>
-
-  <section class="card">
-    <h2 class="font-semibold">Your app starts here</h2>
-    <p class="mt-1 text-zinc-600 dark:text-zinc-400">
-      Edit <code class="font-mono text-sm">web/src/components/Home.svelte</code> and save.
-    </p>
-  </section>
-
-  {#if install.canPrompt}
-    <section class="card flex items-center justify-between gap-4">
-      <p>Install this app for quick access from your home screen.</p>
-      <button class="btn-primary shrink-0" onclick={() => install.install()}>Install</button>
-    </section>
-  {:else if install.needsIosSteps}
-    <section class="card">
-      <p>To install this app, tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.</p>
-    </section>
-  {/if}
-
-  <Notifications />
-
-  <Account />
-
-  {#await version then v}
-    {#if v}<p class="mt-auto text-center text-xs text-zinc-400">Version {v}</p>{/if}
-  {/await}
-</main>
+      <div class="mx-auto grid max-w-2xl grid-cols-5">
+        {#each tabs as t (t.id)}
+          <a
+            href="#{t.id}"
+            class="flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium {tab === t.id
+              ? 'text-brand-600 dark:text-brand-400'
+              : 'text-zinc-500'}"
+            aria-current={tab === t.id ? 'page' : undefined}
+          >
+            <Icon name={t.icon} class="size-6" />
+            {t.label}
+          </a>
+        {/each}
+      </div>
+    </nav>
+  </div>
+{/if}

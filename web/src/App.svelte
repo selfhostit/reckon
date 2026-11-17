@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { errorMessage, pb } from './lib/pb';
+  import { practice } from './lib/practice.svelte';
   import { session } from './lib/session.svelte';
   import Home from './components/Home.svelte';
   import Login from './components/Login.svelte';
@@ -28,12 +29,22 @@
     if (session.user) session.refresh();
     else checkSetup();
   });
+
+  // after sign-in, load this person's levels and sessions
+  $effect(() => {
+    if (session.user && !practice.loaded) practice.load();
+  });
 </script>
 
 {#if session.user}
   {#if route === '#/people' && session.isOwner}
     <People />
-  {:else}
+  {:else if practice.error}
+    <main class="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-4 px-6">
+      <p class="text-center" role="alert">{practice.error}</p>
+      <button class="btn-secondary" onclick={() => practice.load()}>Try again</button>
+    </main>
+  {:else if practice.loaded}
     <Home />
   {/if}
 {:else if error}
