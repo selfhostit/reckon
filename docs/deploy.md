@@ -15,7 +15,7 @@ anything to the internet.
 Two images are published for amd64, arm64 and armv7: `ghcr.io/selfhostit/reckon` (the
 app) and `ghcr.io/selfhostit/reckon-worker` (the Python workers). A release tag like
 `v1.2.0` publishes `:1.2.0`, `:1.2`, `:1` and `:latest` of both; installs follow the
-major version (`:1`), so they only update to a release and never to a new major
+major version (`:0`), so they only update to a release and never to a new major
 version on their own. Every push to `main` publishes `:edge` and the commit
 hash, for trying out what's next. Each image comes with a signed
 [provenance attestation](#check-where-an-image-came-from).
@@ -69,7 +69,7 @@ To add Tailscale later, set `TS_AUTHKEY` and uncomment the `COMPOSE_FILE` line i
 cd ~/reckon && docker compose pull && docker compose up -d
 ```
 
-Updates bring the newest 1.x release, listed with what changed in
+Updates bring the newest 0.x release, listed with what changed in
 [CHANGELOG.md](../CHANGELOG.md). Running the install script again also refreshes the
 compose files from the newest release (or from `RECKON_REF`, a tag or branch), which is
 how an install moves to a new major version. To stay on a release line, or go back to a release, set
@@ -101,7 +101,7 @@ docker buildx imagetools inspect ghcr.io/selfhostit/reckon:latest --format '{{ j
 Add what changed under a new version in `CHANGELOG.md`, merge, then publish a GitHub
 release with a tag like `v1.2.0` (Releases > Draft a new release) and paste the changelog
 entry as its notes. CI tests it, publishes the images and attests them. For a new major
-version, also change the image tags in `deploy/docker-compose.yml` (`:1`) in the same
+version, also change the image tags in `deploy/docker-compose.yml` (`:0`) in the same
 release.
 
 ### Security checks

@@ -4,6 +4,7 @@
 
 Please don't open a public issue for a security problem. Use **Report a vulnerability** on
 this repository's [Security tab](https://github.com/selfhostit/reckon/security/advisories/new),
+or write to **kalfasyan@pm.me**
 with which version (the image tag), what you found, how to reproduce it and what someone
 could do with it.
 
@@ -21,7 +22,7 @@ could do with it.
 ## Supported versions
 
 Fixes go into a new release of the newest version. Installs follow its major version
-(`:1`), so `docker compose pull` or `selfhostit update` brings the fix; older releases
+(`:0`), so `docker compose pull` or `selfhostit update` brings the fix; older releases
 are not patched. See [docs/deploy.md](docs/deploy.md#updates-and-versions).
 
 ## How installs are protected

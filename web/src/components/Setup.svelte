@@ -29,7 +29,7 @@
 </script>
 
 <main class="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 py-10">
-  <Brand title="Welcome" subtitle="Create your account to get started." />
+  <Brand title="Welcome to Reckon" subtitle="Create your account to start practising." />
   <form class="flex flex-col gap-4" onsubmit={submit}>
     <label>
       Setup code
