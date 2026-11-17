@@ -1,0 +1,143 @@
+# reckon
+
+A self-hosted app built on [plasto](https://github.com/selfhostit/plasto).
+
+## Quick start
+
+You need [Go](https://go.dev/dl/) 1.27+, [Node](https://nodejs.org) 22+ and
+[uv](https://docs.astral.sh/uv/) (for the Python workers).
+
+```sh
+make setup   # install dependencies
+make dev     # backend on :8090, web app with live reload on http://localhost:5173
+```
+
+Open the app and create your account with the setup code that `make dev` prints:
+you become the **owner** and can also sign in to the admin UI at http://localhost:8090/_/ with the same
+email and password. Add more people in the app: open **People** at the bottom of the home
+screen, add their name and email, and send them the message it shows with their password.
+
+## What you get
+
+- **First-run setup and sign-in.** The first account is made on a setup screen, with a
+  one-time code from the installer or the app's log, so nobody else can claim a fresh install.
+- **Users and roles.** The owner adds people, gives them a new password and removes them
+  on the People screen; members can see each other and edit themselves. Everyone can
+  change their own password. Nobody can sign themselves up.
+- **Push notifications** straight from your server, with no account or third-party
+  service. Each person turns them on per device; send one from Go with
+  `push.ToUser(app, userID, push.Message{Title: "…", URL: "/…"})`. Phones need the
+  app on HTTPS.
+- **Scheduled jobs that don't get skipped.** `jobs.MustAdd(app, "digest", "0 7 * * *", fn)`
+  runs on a cron schedule in your time zone (`TZ`). If the server was off when a job
+  was due, it runs once when the server starts again. Every run and its error are
+  listed in the admin UI under the `jobs` collection.
+- **Nightly backups** of the database and uploads at 03:00, keeping the last 7, in
+  `pb_data/backups`. Change the schedule or add S3 storage in the admin UI under
+  Settings > Backups.
+- **Python workers** for the heavy lifting (ML, scraping, LLMs), on this machine or
+  another. They sign in with a worker account and read and write records through
+  the API; see [workers/README.md](workers/README.md).
+- **An installable app.** It installs to a phone's home screen or a desktop, opens
+  offline from its cached shell, and follows the system's light or dark mode.
+
+## How it fits together
+
+```mermaid
+flowchart LR
+  phone["Phone or laptop<br/>installable web app"]
+  subgraph box["Your NAS, Pi or server"]
+    app["Go app on PocketBase<br/>API, auth, realtime, admin UI"]
+    db[("SQLite and files<br/>pb_data/")]
+    jobs["Scheduled jobs<br/>and nightly backups"]
+    app --- db
+    app --- jobs
+  end
+  worker["Python workers<br/>ML, scraping, LLMs"]
+  phone -- "HTTPS over Tailscale" --> app
+  worker -- "records through the API" --> app
+  app -. "Web Push" .-> phone
+```
+
+Everything a person sees is the web app, served by the Go app. Heavy work runs in
+Python workers, here or on another machine, which write records; Go hooks react to
+those records and notify people.
+
+## Deploy
+
+On any Linux machine with Docker (a NAS, a Raspberry Pi, a server):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/selfhostit/reckon/main/deploy/install.sh | sh
+```
+
+It asks for a Tailscale auth key, so your devices reach the app at
+`https://reckon.<your-tailnet>.ts.net`, and starts it with Docker Compose. See
+[docs/deploy.md](docs/deploy.md) for updates, backups, workers, Synology and the Pi.
+
+## Layout
+
+```
+backend/            Go app on PocketBase
+  main.go           entry point
+  app/              routes, hooks and jobs (start here)
+  jobs/             scheduled jobs with catch-up
+  push/             Web Push: keys, subscriptions, sending
+  migrations/       database schema as code
+web/                Svelte 5 + Tailwind web app
+  src/App.svelte    picks setup, sign-in or the app
+  src/components/   screens; Home.svelte is where your app starts
+  src/lib/          shared code (API client, session, install) and its tests
+  public/           manifest, service worker and icons
+workers/            Python worker kit, your workers, their tests and image
+deploy/             compose files, Tailscale sidecar, install script, smoke test
+docs/               decisions, the deploy guide and the first-feature guide
+Dockerfile          the app's multi-arch image
+Makefile            run `make` to see every command
+```
+
+## Commands
+
+| Command      | What it does                                          |
+| ------------ | ----------------------------------------------------- |
+| `make dev`   | Run everything with live reload                       |
+| `make check` | Format, lint and type-check                           |
+| `make test`  | Run the Go, web and worker tests                      |
+| `make build` | Build `dist/reckon` with the web app next to it       |
+| `make run`   | Build the Docker image and run it on :8090            |
+| `make smoke` | Deploy both images with Compose and test end to end   |
+
+Pushes to `main` publish `ghcr.io/selfhostit/reckon` and
+`ghcr.io/selfhostit/reckon-worker` for amd64, arm64 and armv7; a `v*` tag
+publishes that version.
+
+## Security and maintenance
+
+- **Not on the internet:** the container listens on `127.0.0.1` only; reach it through
+  Tailscale or your own reverse proxy with HTTPS (`deploy/docker-compose.yml`).
+- **Locked-down container:** runs as a normal user, drops every Linux capability and
+  can't gain new ones; its filesystem is read-only apart from its data.
+- **Nobody claims a new install before you:** the first account needs the one-time setup
+  code the install prints (`backend/app/setup.go`).
+- **Sign-ins are rate limited** (10 a minute, `backend/migrations/*_rate_limits.go`), and the
+  web app sends a Content Security Policy (`backend/app/headers.go`).
+- **Tested on every change:** Go, web and Python worker tests and an end-to-end run of the published images
+  (`make smoke`) in [CI](.github/workflows/ci.yml); Actions are pinned to commit hashes and
+  Dependabot keeps Go, npm, Python, Docker and Actions dependencies current.
+- **Security scans** on every pull request and every week: CodeQL, govulncheck on the
+  Go code, Grype on the other dependencies and the released images, dependency review and
+  gitleaks
+  ([security.yml](.github/workflows/security.yml)).
+- **Versioned releases:** installs update to a release, not to every change on `main`, and
+  every image has a signed attestation of the commit and workflow that built it
+  ([CHANGELOG.md](CHANGELOG.md), [docs/deploy.md](docs/deploy.md#check-where-an-image-came-from)).
+- **No analytics or tracking,** and no account anywhere else: the data stays in `pb_data` on your
+  machine, with a nightly backup kept there.
+
+## Support
+
+If reckon saves you time, you can [buy me a coffee](https://buymeacoffee.com/kalfasyan).
+
+## License
+
+MIT
