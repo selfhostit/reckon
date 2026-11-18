@@ -6,7 +6,11 @@
 
 **Practise the numerical reasoning tests that job applications ask for, on your own hardware.**
 
+[![CI](https://github.com/selfhostit/reckon/actions/workflows/ci.yml/badge.svg)](https://github.com/selfhostit/reckon/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/selfhostit/reckon)](https://github.com/selfhostit/reckon/releases/latest)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/selfhostit/reckon/badge)](https://scorecard.dev/viewer/?uri=github.com/selfhostit/reckon)
+[![License: MIT](https://img.shields.io/github/license/selfhostit/reckon)](LICENSE)
+[![Image](https://img.shields.io/badge/image-ghcr.io%2Fselfhostit%2Freckon-2496ED?logo=docker&logoColor=white)](https://github.com/orgs/selfhostit/packages/container/package/reckon)
 
 </div>
 
